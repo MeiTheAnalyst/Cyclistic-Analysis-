@@ -1,3 +1,5 @@
+-- Hi, welcome to MeiTheAnalyst! Enjoy reading through my SQL code for Cyclistic Project! --
+
 --Combined all 12 months datasets into one table named ridedata_combined
 --Created two subsets divide member riders (Member_combined) and casual riders (Casual_combined)
 CREATE TABLE Member_combined AS
