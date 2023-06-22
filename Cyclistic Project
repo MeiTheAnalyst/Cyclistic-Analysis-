@@ -1,0 +1,129 @@
+--Combined all 12 months datasets into one table named ridedata_combined
+--Created two subsets divide member riders (Member_combined) and casual riders (Casual_combined)
+CREATE TABLE Member_combined AS
+SELECT *
+FROM tripdata_combined
+WHERE field13 = 'member' 
+CREATE TABLE Casual_combined AS
+SELECT *
+FROM tripdata_combined
+WHERE field13 = 'casual'
+
+--Modified two subsets columns’ name which changed while importing data
+--Deleted end_lat and end_lng NULL rows in Member_combined. Casual_combined didn’t have NULL value
+DELETE FROM Member_combined
+WHERE end_lat IS NULL OR end_lng IS NULL
+--Add ride_length column to two tables
+ALTER TABLE Member_combined
+ADD COLUMN ride_length
+ALTER TABLE Casual_combined
+ADD COLUMN ride_length
+
+--Split and add date time values into new date time columns
+ALTER TABLE Member_combined ADD COLUMN started_date TEXT;
+ALTER TABLE Member_combined ADD COLUMN started_time TEXT;
+ALTER TABLE Member_combined ADD COLUMN ended_date TEXT;
+ALTER TABLE Member_combined ADD COLUMN ended_time TEXT;
+UPDATE Member_combined SET started_date = SUBSTR (started_at, 1, 10), started_time = SUBSTR (started_at, 12),
+                           ended_date = SUBSTR (ended_at, 1, 10), ended_time = SUBSTR (ended_at, 12);
+ALTER TABLE Casual_combined ADD COLUMN started_date TEXT;
+ALTER TABLE Casual_combined ADD COLUMN started_time TEXT;
+ALTER TABLE Casual_combined ADD COLUMN ended_date TEXT;
+ALTER TABLE Casual_combined ADD COLUMN ended_time TEXT;
+UPDATE Casual_combined SET started_date = SUBSTR (started_at, 1, 10), started_time = SUBSTR (started_at, 12),
+                           ended_date = SUBSTR (ended_at, 1, 10), ended_time = SUBSTR (ended_at, 12);
+
+--Do the calculation for ride_length
+UPDATE Member_combined 
+SET ride_length = TIME (ended_time, '-' || started_time);
+UPDATE Casual_combined 
+SET ride_length = TIME (ended_time, '-' || started_time);
+
+--Minimize the datasets by drop columns with unnecessary data
+ALTER TABLE Casual_combined DROP COLUMN ended_time;
+ALTER TABLE Member_combined DROP COLUMN ended_time;
+ALTER TABLE Casual_combined DROP COLUMN ended_date;
+ALTER TABLE Member_combined DROP COLUMN ended_date
+
+--Transfer date into day of the week
+ALTER TABLE Casual_combined ADD COLUMN day_of_week TEXT;
+UPDATE Casual_combined
+SET day_of_week = (
+    CASE CAST (strftime ('%w', started_date) AS INTEGER)
+        WHEN 0 THEN 'Sunday'
+        WHEN 1 THEN 'Monday'
+        WHEN 2 THEN 'Tuesday'
+        WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday'
+        WHEN 5 THEN 'Friday'
+        WHEN 6 THEN 'Saturday'
+    END);
+ALTER TABLE Member_combined ADD COLUMN day_of_week TEXT;
+UPDATE Member_combined
+SET day_of_week = (
+    CASE CAST(strftime('%w', started_date) AS INTEGER)
+        WHEN 0 THEN 'Sunday'
+        WHEN 1 THEN 'Monday'
+        WHEN 2 THEN 'Tuesday'
+        WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday'
+        WHEN 5 THEN 'Friday'
+        WHEN 6 THEN 'Saturday'
+    END);
+    
+--Create columns of the ride Months for both Casual and Member riders
+ALTER TABLE Casual_combined ADD COLUMN Month TEXT;
+UPDATE Casual_combined SET Month =
+  CASE substr(started_date, 6, 2)
+    WHEN '01' THEN 'January'
+    WHEN '02' THEN 'February'
+    WHEN '03' THEN 'March'
+    WHEN '04' THEN 'April'
+    WHEN '05' THEN 'May'
+    WHEN '06' THEN 'June'
+    WHEN '07' THEN 'July'
+    WHEN '08' THEN 'August'
+    WHEN '09' THEN 'September'
+    WHEN '10' THEN 'October'
+    WHEN '11' THEN 'November'
+    WHEN '12' THEN 'December'
+    ELSE 'Invalid Month'
+  END;
+ALTER TABLE Member_combined ADD COLUMN Month TEXT;
+UPDATE Member_combined SET Month =
+  CASE substr(started_date, 6, 2)
+    WHEN '01' THEN 'January'
+    WHEN '02' THEN 'February'
+    WHEN '03' THEN 'March'
+    WHEN '04' THEN 'April'
+    WHEN '05' THEN 'May'
+    WHEN '06' THEN 'June'
+    WHEN '07' THEN 'July'
+    WHEN '08' THEN 'August'
+    WHEN '09' THEN 'September'
+    WHEN '10' THEN 'October'
+    WHEN '11' THEN 'November'
+    WHEN '12' THEN 'December'
+    ELSE 'Invalid Month'
+  END;
+  
+--Minimize the datasets by drop columns with unnecessary data
+--These data had already manipulated into separate columns 
+ALTER TABLE Casual_combined DROP COLUMN started_at;
+ALTER TABLE Member_combined DROP COLUMN ended_at;
+ALTER TABLE Casual_combined DROP COLUMN started_at;
+ALTER TABLE Member_combined DROP COLUMN ended_at
+
+--Combine both cleaned tables into one table and ready for analyzing
+CREATE TABLE MemberCasual_Combines AS
+SELECT * FROM Member_combined
+UNION ALL
+SELECT * FROM Casual_combined;
+
+--Delete rows that start_station_id or end_station_id is NULL
+--After deleting NULL rows, there are 4139601 rows remaining
+DELETE FROM MemberCasual_Combines
+WHERE start_station_id is NULL or  end_station_id is NULL;
+
+----Done Processing the data with cleaning and manipulating steps----
+----Now, ready for analyzing the data and tell the stories!----
