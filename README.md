@@ -1,5 +1,5 @@
 - 👋 Hi, I’m @MeiTheAnalyst
-- 👀 I’m interested in Data Cleaning, Data Manipulating, and Storytelling based on data insights!
+- 👀 I’m interested in Data Cleaning, Data Manipulating, and Storytelling based on Data Insights!
 - 🌱 I’m currently learning Visualization Tools.
 - 💞️ I’m looking to collaborate on Organization Improvement.
 - 📫 My Email: meihung005@gmail.com
