@@ -15,6 +15,7 @@ WHERE field13 = 'casual'
 --Deleted end_lat and end_lng NULL rows in Member_combined. Casual_combined didn’t have NULL value
 DELETE FROM Member_combined
 WHERE end_lat IS NULL OR end_lng IS NULL
+
 --Add ride_length column to two tables
 ALTER TABLE Member_combined
 ADD COLUMN ride_length
